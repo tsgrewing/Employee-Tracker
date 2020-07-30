@@ -95,12 +95,10 @@ function start() {
 }
 
 function viewEmployees() {
-    var query = "SELECT * FROM employees OUTER JOIN role ON (employee.role_id = role.id) OUTER JOIN department ON";
-    connection.query(query, [answer.artist, answer.artist], function(err, res) {
-        console.log("---Employee List---");
-        res.forEACH (row => {
-            console.log(`${res.first_name} ${res.last_name} --  ${res.dept}  --  ${res.title}  --  ${res.salary} -- ${res.manager}`);
-          })
+    var query = "SELECT employee.first_name, employee.last_name, department.dept, role.title, role.salary, employee.manager_id";
+    query += "FROM employee JOIN role ON (employee.role_id = role.id) JOIN department ON (role.department_id=department.id);";
+    connection.query(query, function(err, res) {
+        console.table(res)
     });
         start();
 };
