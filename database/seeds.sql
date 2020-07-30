@@ -1,4 +1,4 @@
-INSERT INTO departmnent (name) VALUES
+INSERT INTO departmnent (dept) VALUES
 ("Accounting")
 ("Production")
 ("Retail")
