@@ -1,6 +1,15 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
+var fName = "employee.first_name";
+var lName = "employee.last_name";
+var dept =  "department.dept";
+var title = "role.title";
+var salary = "role.salary";
+var manager = "employee.manager_id"
+var roleId = "employee.role_id";
+var deptId = "role.department_id";
+
 var connection = mysql.createConnection({
   host: "localhost",
 
@@ -44,7 +53,7 @@ function start() {
     .then(function(answer) {
       switch (answer.action) {
       case "View Employees":
-        viewEmployeer();
+        viewEmployees();
         break;
 
       case "View Departments":
@@ -95,10 +104,84 @@ function start() {
 }
 
 function viewEmployees() {
-    var query = "SELECT employee.first_name, employee.last_name, department.dept, role.title, role.salary, employee.manager_id";
-    query += "FROM employee JOIN role ON (employee.role_id = role.id) JOIN department ON (role.department_id=department.id);";
+    var query = `SELECT ${fName}, ${lName}, ${dept}, ${title}, ${salary}, ${manager}`;
+    query += `FROM employee JOIN role ON (${roleId} = role.id) JOIN department ON (${deptId}=department.id)`;
+    query += `ORDER BY ${salary};`;
     connection.query(query, function(err, res) {
-        console.table(res)
+      if (err) throw err;
+      console.table(res)
     });
         start();
+};
+
+function viewDept() {
+    var query = `SELECT ${dept}, ${fName}, ${lName} ${title}, ${salary}, ${manager} FROM department`
+    query += `JOIN role ON (${roleId} = role.id) JOIN department ON (${deptId}=department.id) ORDER BY ${dept};`
+    connection.query(query, function(err, res) {
+      if (err) throw err;
+      console.table(res)
+    });
+    start();
+};
+
+function viewRoles() {
+  var query = `SELECT ${title}, ${salary}, ${dept} FROM role JOIN`
+  query += `department ON (${roleId} = role.id) ORDER BY ${salary};`
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    console.table(res)
+  });
+  start();
+};
+
+// function deptBudget() {
+
+// };
+
+function updateRole() {
+  var query = `SELECT ${fName}, ${lName} FROM employee`;
+    connection.query(query, function(err, res) {
+      let nameArr = res.map(employee => ({name: employee.first_name0 + " " + employee.last_name}));
+      inquirer
+      .prompt({
+        name: "choice",
+        type: "list",
+        message: "Which employee's role would you like to update??",
+        choices: nameArr
+      })
+      .then(function(answer) {
+        var query = "SELECT position, song, year FROM top5000 WHERE ?";
+        connection.query(query, { artist: answer.artist }, function(err, res) {
+          start();
+        });
+      });
+    });
+};
+
+// function updateManager() {
+
+// };
+
+function addEmployee() {
+
+};
+
+function addDept() {
+
+};
+
+function addRole() {
+
+};
+
+function delEmployee() {
+
+};
+
+function delDept() {
+
+};
+
+function delRole() {
+
 };
