@@ -41,6 +41,7 @@ function start() {
         "View Employees",
         "View Employees by Department",
         "View Roles",
+        "View Deparments",
         // "View Utilized Budget of Department",
         "Update Employee Role",
         // "Update Employee Manager",
@@ -60,11 +61,15 @@ function start() {
         break;
 
       case "View Employees by Department":
-        viewDept();
+        viewByDept();
         break;
 
       case "View Roles":
         viewRoles();
+        break;
+
+      case "View Departments":
+        viewDept();
         break;
 
     //   case "View Utilized Budget of Department":
@@ -124,7 +129,7 @@ function viewEmployees() {
     });  
 };
 
-function viewDept() {
+function viewByDept() {
     var query = `SELECT ${dept}, CONCAT(${fName}, ' ', ${lName}) AS \"Name\", ${title}, ${salary}, ${mgrName} FROM `;
     query += `employee JOIN role ON (${roleId} = role.id) JOIN department ON (${deptId}=department.id) `;
     query += `LEFT JOIN employee manager ON employee.manager_id = manager.id ORDER BY ${dept};`;
@@ -143,6 +148,15 @@ function viewRoles() {
     console.table(res);
     start();
   });
+};
+
+function viewDept() {
+  var query = `SELECT * FROM department;`;
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    console.table(res);
+    start();
+  }); 
 };
 
 // function deptBudget() {
