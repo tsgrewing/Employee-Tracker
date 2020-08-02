@@ -25,8 +25,22 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
   if (err) throw err;
-  console.log()
-
+  console.log(`
+  ███████╗███╗   ███╗██████╗ ██╗      ██████╗ ██╗   ██╗███████╗███████╗
+  ██╔════╝████╗ ████║██╔══██╗██║     ██╔═══██╗╚██╗ ██╔╝██╔════╝██╔════╝
+  █████╗  ██╔████╔██║██████╔╝██║     ██║   ██║ ╚████╔╝ █████╗  █████╗  
+  ██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██║   ██║  ╚██╔╝  ██╔══╝  ██╔══╝  
+  ███████╗██║ ╚═╝ ██║██║     ███████╗╚██████╔╝   ██║   ███████╗███████╗
+  ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝
+                                                                       
+  ████████╗██████╗  █████╗  ██████╗██╗  ██╗███████╗██████╗             
+  ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗            
+     ██║   ██████╔╝███████║██║     █████╔╝ █████╗  ██████╔╝            
+     ██║   ██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗            
+     ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║            
+     ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝            
+                                                                                                                          
+  `)
   checkDept();
 });
 
@@ -83,9 +97,9 @@ function start() {
         "Add Employee",
         "Add Department",
         "Add Role",
-        // "Delete Employee",
-        // "Delete Department",
-        // "Delete Role"
+        "Delete Employee",
+        "Delete Department",
+        "Delete Role",
         "Exit"
       ]
     })
@@ -107,9 +121,9 @@ function start() {
         viewDept();
         break;
 
-    //   case "View Utilized Budget of Department":
-    //     deptBudget();
-    //     break;
+      // case "View Utilized Budget of Department":
+      //   deptBudget();
+      //   break;
 
       case "Update Employee Role":
         updateRole();
@@ -131,22 +145,22 @@ function start() {
         addRole();
         break;
 
+      case "Delete Employee":
+        delEmployee();
+        break;
+      
+      case "Delete Department":
+        delDept();
+        break;
+      
+      case "Delete Role":
+        delRole();
+        break;
+
       case "Exit":
         console.log("Have a nice day!")
         process.exit()
         break;
-      
-    //   case "Delete Employee":
-    //     delEmployee();
-    //     break;
-      
-    //   case "Delete Department":
-    //     delDept();
-    //     break;
-      
-    //   case "Delete Role":
-    //     delRole();
-    //     break;
       }
     });
 }
@@ -165,14 +179,27 @@ function viewEmployees() {
 };
 
 function viewByDept() {
-    var query = `SELECT ${dept}, CONCAT(${fName}, ' ', ${lName}) AS \"Name\", ${title}, ${salary}, ${mgrName} FROM `;
-    query += `employee JOIN role ON (${roleId} = role.id) JOIN department ON (${deptId}=department.id) `;
-    query += `LEFT JOIN employee manager ON employee.manager_id = manager.id ORDER BY ${dept};`;
-    connection.query(query, function(err, res) {
-      if (err) throw err;
-      console.table(res);
-      start();
-    });  
+  var query = `SELECT department FROM department;`;
+  connection.query(query, function(err, res) {
+    var deptArr = res.map(dept => (dept.department))
+    if (err) throw err;
+    inquirer
+    .prompt({
+        name: "choice",
+        type: "list",
+        message: "Which department would you like to view?",
+        choices: deptArr
+      }).then(answer => {
+        var query = `SELECT ${dept}, CONCAT(${fName}, ' ', ${lName}) AS \"Name\", ${title}, ${salary}, ${mgrName} FROM `;
+        query += `employee JOIN role ON (${roleId} = role.id) JOIN department ON (${deptId}=department.id) AND ${dept} = ? `;
+        query += `LEFT JOIN employee manager ON employee.manager_id = manager.id;`;
+        connection.query(query, answer.choice, function(err, res) {
+          if (err) throw err;
+          console.table(res);
+          start();
+        });
+      })
+  });
 };
 
 function viewRoles() {
@@ -195,8 +222,8 @@ function viewDept() {
 };
 
 // function deptBudget() {
-
 // };
+
 
 // Update an employee's role
 function updateRole() {
@@ -229,8 +256,6 @@ function updateRole() {
             start();
           });
         });
-
-
       });
     });
 };
@@ -385,18 +410,85 @@ function addRole() {
     });
 };
 
-// function delEmployee() {
+function delEmployee() {
+  var query = `SELECT ${fName}, ${lName} FROM employee;`;
+  connection.query(query, function(err, res) {
+    let nameArr = res.map(employee => (employee.first_name + " " + employee.last_name));
+    nameArr = nameArr.filter(employee => (employee !="null null"));
+    inquirer
+    .prompt({
+        name: "employee",
+        type: "list",
+        message: "Which employee's role would you like to update?",
+        choices: nameArr
+      }
+    ).then(function(answers) {
+      var query = `SELECT id FROM employee WHERE CONCAT (${fName}, ' ', ${lName}) =?`;
+      connection.query(query, answers.employee, function(err, res) {
+          var query = `DELETE FROM employee WHERE ${empId} = ?;`
+          var empNum = res[0].id
+          connection.query(query, empNum, function(err, res) {
+            if (err) throw err;
+            console.log(`${answers.employee} has been removed from the database`)
+            checkEmployee()
+          });
+      });
+    });
+  });
+};
 
-// };
+function delDept() {
+  var query = `SELECT department FROM department;`;
+  connection.query(query, function(err, res) {
+    var deptArr = res.map(dept => (dept.department))
+    if (err) throw err;
+    inquirer
+    .prompt({
+        name: "choice",
+        type: "list",
+        message: "Which department would you like to delete?",
+        choices: deptArr
+      }).then(answer => {
+        connection.query(`SELECT id FROM department WHERE ${dept} = ?`, answer.choice, (err, res) => {
+          if (err) throw err;
+          var query = `DELETE FROM department WHERE id = ?;`
+          var deptNum = res[0].id
+          connection.query(query, deptNum, function(err, res) {
+            if (err) throw err;
+            console.log(`${answer.choice} has been removed from the database, along with all related roles and employees`)
+            checkDept();
+        });
+      })  
+    })
+  });
+};
 
-// function delDept() {
 
-// };
-
-// function delRole() {
-
-// };
-
+function delRole() {
+  var query = `SELECT title FROM role;`;
+  connection.query(query, function(err, res) {
+    var roleArr = res.map(role => (role.title))
+    if (err) throw err;
+    inquirer
+    .prompt({
+        name: "choice",
+        type: "list",
+        message: "Which role would you like to delete?",
+        choices: roleArr
+      }).then(answer => {
+        connection.query(`SELECT id FROM role WHERE ${title} = ?`, answer.choice, (err, res) => {
+          if (err) throw err;
+          var query = `DELETE FROM role WHERE id = ?;`
+          var roleNum = res[0].id;
+          connection.query(query, roleNum, function(err, res) {
+            if (err) throw err;
+            console.log(`${answer.choice} has been removed from the database, along with all related employees`)
+            checkRole();
+        });
+      })  
+    })
+  });
+};
 
 const validateName = async (input) => {
   var text = /^[a-zA-Z]+$/;

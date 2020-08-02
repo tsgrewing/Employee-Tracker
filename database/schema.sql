@@ -4,23 +4,23 @@ CREATE database employee_db;
 USE employee_db;
 
 CREATE TABLE department (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-    dept VARCHAR(30)
+	ID INT AUTO_INCREMENT PRIMARY KEY,
+    Department VARCHAR(30)
 );
 
 CREATE TABLE role (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(30),
-    salary DECIMAL, 
-    department_id INT,
-    FOREIGN KEY (department_id) REFERENCES department(id)
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(30),
+    Salary DECIMAL, 
+    Department_id INT,
+    FOREIGN KEY (Department_id) REFERENCES department (ID) ON DELETE CASCADE
 );
 
 CREATE TABLE employee (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    ID INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(30),
     last_name VARCHAR(30),
     role_id INT, 
     manager_id INT DEFAULT NULL,
-    FOREIGN KEY(role_id) REFERENCES role(id)
+    FOREIGN KEY(role_id) REFERENCES role (id) ON DELETE CASCADE
 );
