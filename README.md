@@ -25,7 +25,7 @@
   I also plan to refactor the code to be a little more DRY, and move the functions into smaller more digestible files to clean up the main app.js file. (For instance all the add functions would be in one file, and all the delete functions in another)
   
   ## Usage
-  Clone the repo and then run npm install from the command line within the local directory containing the app.js and package.json files. Once the installation is done, run app.js.
+  Clone the repo and then run npm install from the command line within the local directory containing the app.js and package.json files. Run the schema.sql file in a MySQL workbench, once the database and tables are created run the seeds file to populate the tables with some starting data. Once the installation is done and the tables are ready, run app.js.
   
   ## License
   This project is covered under the MIT License, more information can be found [here](https://opensource.org/licenses/MIT).
