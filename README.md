@@ -6,6 +6,8 @@
   
   ## Table of Contents
   [Demo](#Demo)
+  
+  [Development](#Development)
 
   [Usage](#Usage)
 
