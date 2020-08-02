@@ -4,7 +4,7 @@ const cTable = require('console.table');
 
 const fName = "employee.first_name";
 const lName = "employee.last_name";
-const dept =  "department.dept";
+const dept =  "department.department";
 const title = "role.title";
 const salary = "role.salary";
 const manager = "employee.manager_id"
@@ -41,7 +41,7 @@ function start() {
         "View Employees",
         "View Employees by Department",
         "View Roles",
-        "View Deparments",
+        "View Departments",
         // "View Utilized Budget of Department",
         "Update Employee Role",
         // "Update Employee Manager",
@@ -211,15 +211,18 @@ function addEmployee() {
       let nameArr = res.map(employee => (employee.first_name + " " + employee.last_name));
       nameArr = nameArr.filter(employee => (employee !="null null"));
       let roleArr = res.map(employee => (employee.title));
+      roleArr = Array.from(new Set(roleArr));
         inquirer.prompt([{
           type: "input",
           name: "firstName",
-          message: "What is the employees first name?"
+          message: "What is the employees first name?",
+          validate: validateName
         },
         {
           type: "input",
           name: "lastName",
-          message: "What is the employees last name?"
+          message: "What is the employees last name?",
+          validate: validateName
         },
         {
           type: "list",
@@ -252,9 +255,10 @@ function addDept() {
   inquirer.prompt({
     type: "input",
     name: "newDept",
-    message: "What department would you like to add?"
+    message: "What department would you like to add?",
+    validate: validateName
   }).then(answers => {
-        var query = `INSERT INTO department (dept) VALUES (?)`;
+        var query = `INSERT INTO department (department) VALUES (?)`;
         connection.query(query, answers.newDept.trim(), function(err, res) {
           if (err) throw err;
           console.log(`${answers.newDept} has been added to the department database.`);
@@ -265,7 +269,41 @@ function addDept() {
 
 // Add a new role
 function addRole() {
-
+    connection.query(`SELECT department FROM department`, function(err, res) {
+      let deptArr = res.map(data => (data.department));
+        inquirer.prompt([{
+          type: "input",
+          name: "roleTitle",
+          message: "What is the title of the new role?",
+          validate: validateName
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is this role's salary?",
+          validate: function validateAge(salary) {
+                      var num = /^\d+$/;
+                      return num.test(salary) || "Salary should be a number";
+                    }
+        },
+        {
+          type: "list",
+          name: "roleDept",
+          message: "What department is this role in?",
+          choices: deptArr
+        }
+        ]).then(answers => {
+          connection.query(`SELECT id FROM department WHERE ${dept} = ?;`, answers.roleDept, function(err, res) {
+            if (err) throw err;
+            var query = 'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)';
+            connection.query(query, [answers.roleTitle.trim(), parseInt(answers.salary), res[0].id], function(err, res) {
+              if (err) throw err;
+              console.log(`${answers.roleTitle} has been added to the roles database.`);
+              start();
+          });
+        });
+      });
+    });
 };
 
 // function delEmployee() {
@@ -279,3 +317,9 @@ function addRole() {
 // function delRole() {
 
 // };
+
+
+const validateName = async (input) => {
+  var text = /^[a-zA-Z]+$/;
+  return text.test(input) || "Please provide a valid name"
+}
