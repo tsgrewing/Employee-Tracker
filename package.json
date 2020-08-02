@@ -4,6 +4,7 @@
   "description": "A CLI app to view and manage employees, roles and departments",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

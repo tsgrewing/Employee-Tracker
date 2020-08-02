@@ -491,6 +491,6 @@ function delRole() {
 };
 
 const validateName = async (input) => {
-  var text = /^[a-zA-Z]+$/;
+  var text = /^[a-zA-Z_ ]+$/;
   return text.test(input) || "Please provide a valid name"
 }
