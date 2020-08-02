@@ -27,8 +27,43 @@ connection.connect(function(err) {
   if (err) throw err;
   console.log()
 
-  start();
+  checkDept();
 });
+
+
+// Functions to check if the tables are empty, and if they are prompt the user to add the necessary info
+function checkDept () {
+  connection.query(`SELECT * FROM department`, function(err, res){
+    if (err) throw err;
+    if (res.length === 0) {
+      console.log("Please add a department");
+      addDept();
+    }
+    else{checkRole()};
+  })
+};
+
+function checkRole () {
+  connection.query(`SELECT * FROM role`, function(err, res){
+    if (err) throw err;
+    if (res.length === 0) {
+      console.log("Please add a role");
+      addRole();
+    }
+    else {checkEmployee()};
+  })
+};
+
+function checkEmployee () {
+  connection.query(`SELECT * FROM employee`, function(err, res){
+    if (err) throw err;
+    if (res.length === 0) {
+      console.log("Please add an employee");
+      addEmployee();
+    }
+    else {start()};
+  })
+};
 
 // initial function to ask user what they would like to do
 function start() {
@@ -44,7 +79,7 @@ function start() {
         "View Departments",
         // "View Utilized Budget of Department",
         "Update Employee Role",
-        // "Update Employee Manager",
+        "Update Employee Manager",
         "Add Employee",
         "Add Department",
         "Add Role",
@@ -80,9 +115,9 @@ function start() {
         updateRole();
         break;
       
-    //   case "Update Employee Manager":
-    //     updateManager();
-    //     break;
+      case "Update Employee Manager":
+        updateManager();
+        break;
       
       case "Add Employee":
         addEmployee();
@@ -200,9 +235,39 @@ function updateRole() {
     });
 };
 
-// function updateManager() {
+function updateManager() {
+  var query = `SELECT ${empId}, ${fName}, ${lName}, ${mgrName} FROM employee LEFT JOIN employee manager ON employee.manager_id = manager.id`;
+    connection.query(query, function(err, res) {
+      let nameArr = res.map(employee => (employee.first_name + " " + employee.last_name));
+      nameArr = nameArr.filter(employee => (employee !="null null"));
+      inquirer
+      .prompt([{
+          name: "employee",
+          type: "list",
+          message: "Which employee's manager would you like to update?",
+          choices: nameArr
+        },
+        {
+          name: "mgr",
+          type: "list",
+          message: "Who is their new manager?",
+          choices: nameArr
+        }
+      ])
+      .then(function(answers) {
+        var query = `UPDATE employee SET ${manager} = ? WHERE CONCAT (${fName}, ' ', ${lName}) =?`;
+        connection.query(`SELECT id FROM employee WHERE CONCAT (${fName}, ' ', ${lName}) = ?`, answers.mgr, function(err, res) {
+          if (err) throw err;
+          connection.query(query, [res[0].id, answers.employee], function(err, res) {
+            if (err) throw err;
+            start();
+          });
+        });
 
-// };
+
+      });
+    });
+};
 
 // Add a new employee
 function addEmployee() {
@@ -210,6 +275,7 @@ function addEmployee() {
     connection.query(query, function(err, res) {
       let nameArr = res.map(employee => (employee.first_name + " " + employee.last_name));
       nameArr = nameArr.filter(employee => (employee !="null null"));
+      nameArr.push("None")
       let roleArr = res.map(employee => (employee.title));
       roleArr = Array.from(new Set(roleArr));
         inquirer.prompt([{
@@ -234,18 +300,31 @@ function addEmployee() {
           type: "list",
           name: "mgr",
           message: "Who is this employee's manager?",
-          choices: nameArr
+          choices: nameArr,
         }
         ]).then(answers => {
-          connection.query(`SELECT id FROM role WHERE title = ?; SELECT id FROM employee WHERE CONCAT (${fName}, ' ', ${lName}) = ?;`, [answers.role, answers.mgr], function(err, res) {
-            if (err) throw err;
-            var query = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)';
-            connection.query(query, [answers.firstName.trim(), answers.lastName.trim(), res[0][0].id, res[1][0].id], function(err, res) {
+          if (answers.mgr != "None"){
+            connection.query(`SELECT id FROM role WHERE title = ?; SELECT id FROM employee WHERE CONCAT (${fName}, ' ', ${lName}) = ?;`, [answers.role, answers.mgr], function(err, res) {
               if (err) throw err;
-              console.log(`${answers.firstName} ${answers.lastName} has been added to the employee database.`);
-              start();
-          });
-        });
+              var query = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)';
+              connection.query(query, [answers.firstName.trim(), answers.lastName.trim(), res[0][0].id, res[1][0].id], function(err, res) {
+                if (err) throw err;
+                console.log(`${answers.firstName} ${answers.lastName} has been added to the employee database.`);
+                start();
+              });
+            });
+          }
+          else {
+            connection.query(`SELECT id FROM role WHERE title = ?`, answers.role, function(err, res) {
+              if (err) throw err;
+              var query = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)';
+              connection.query(query, [answers.firstName.trim(), answers.lastName.trim(), res[0].id, null], function(err, res) {
+                if (err) throw err;
+                console.log(`${answers.firstName} ${answers.lastName} has been added to the employee database.`);
+                start();
+              });
+            });
+          }
       });
     });
 };
@@ -262,7 +341,7 @@ function addDept() {
         connection.query(query, answers.newDept.trim(), function(err, res) {
           if (err) throw err;
           console.log(`${answers.newDept} has been added to the department database.`);
-          start();
+          checkRole();
         })
       });
 };
@@ -299,7 +378,7 @@ function addRole() {
             connection.query(query, [answers.roleTitle.trim(), parseInt(answers.salary), res[0].id], function(err, res) {
               if (err) throw err;
               console.log(`${answers.roleTitle} has been added to the roles database.`);
-              start();
+              checkEmployee();
           });
         });
       });
