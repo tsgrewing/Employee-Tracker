@@ -1,5 +1,5 @@
 # Employee-Tracker
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Last Commit](https://img.shields.io/github/last-commit/tsgrewing/Note-Taker) ![Repo Size](https://img.shields.io/github/repo-size/tsgrewing/Note-Taker)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Last Commit](https://img.shields.io/github/last-commit/tsgrewing/Employee-Tracker) ![Repo Size](https://img.shields.io/github/repo-size/tsgrewing/Employee-Tracker)
 
   ## Description
   An CLI app that allows users to view and manage their workforce. Current version allows for viewing, adding and deleting employees, departments and roles, as well as giving users the option to edit employee's roles and managers. 
